@@ -3,6 +3,9 @@ FROM openresty/openresty:jessie
 # Locale data.
 RUN apt-get install -y locales locales-all
 
+# For CI envrionment.
+RUN apt-get install -y git ssh
+
 # Install luacheck
 RUN luarocks install luacheck 0.20.0-1 && \
   ln -s /usr/local/openresty/luajit/bin/luacheck /usr/local/bin/luacheck
