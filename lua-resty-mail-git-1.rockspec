@@ -16,5 +16,6 @@ build = {
     ["resty.mail.message"] = "lib/resty/mail/message.lua",
     ["resty.mail.smtp"] = "lib/resty/mail/smtp.lua",
     ["resty.mail.headers"] = "lib/resty/mail/headers.lua",
+    ["resty.mail.rfc2822_date"] = "lib/resty/mail/rfc2822_date.lua",
   },
 }

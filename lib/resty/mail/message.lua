@@ -1,4 +1,5 @@
 local mail_headers = require "resty.mail.headers"
+local rfc2822_date = require "resty.mail.rfc2822_date"
 local resty_random = require "resty.random"
 local str = require "resty.string"
 
@@ -47,7 +48,7 @@ local function extract_address(string)
 end
 
 local function random_tag()
-  local num_bytes = 32
+  local num_bytes = 20
   local random = random_bytes(num_bytes, true)
   if not random then
     random = random_bytes(num_bytes, false)
@@ -63,7 +64,7 @@ end
 local function generate_message_id(data)
   local host
   if data and data["from"] then
-    local captures, err = match(data["from"], "@(.+)", "jo")
+    local captures, err = match(data["from"], "@([^>]+)", "jo")
     if captures then
       host = captures[1] .. ".mail"
     elseif err then
@@ -78,6 +79,21 @@ local function generate_message_id(data)
   return "<" .. random_tag() .. "@" .. host .. ">"
 end
 
+local function wrapped_base64(value)
+  local line_length = 76
+  local encoded = encode_base64(value)
+  local lines = {}
+  local index = 1
+  while index <= #encoded do
+    local end_index = index + line_length - 1
+    local line = string.sub(encoded, index, end_index)
+    index = end_index + 1
+    table.insert(lines, line)
+  end
+
+  return table.concat(lines, CRLF)
+end
+
 function _M.new(data)
   if not data then
     data = {}
@@ -85,7 +101,7 @@ function _M.new(data)
 
   local headers = mail_headers.new()
   if data["headers"] then
-    for name, value in ipairs(data["headers"]) do
+    for name, value in pairs(data["headers"]) do
       headers[name] = value
     end
   end
@@ -116,6 +132,10 @@ function _M.new(data)
 
   if not headers["Message-ID"] then
     headers["Message-ID"] = generate_message_id(data)
+  end
+
+  if not headers["Date"] then
+    headers["Date"] = rfc2822_date(ngx.now())
   end
 
   if not headers["MIME-Version"] then
@@ -165,7 +185,7 @@ function _M.get_body_list(self)
   local mixed_boundary
   if data["text"] or data["html"] or data["attachments"] then
     mixed_boundary = generate_boundary()
-    headers["Content-Type"] = 'multipart/mixed; charset=utf-8; boundary="' .. mixed_boundary .. '"'
+    headers["Content-Type"] = 'multipart/mixed; boundary="' .. mixed_boundary .. '"'
   end
 
   for name, value in pairs(headers) do
@@ -175,10 +195,12 @@ function _M.get_body_list(self)
   table.insert(body, CRLF)
 
   if data["text"] or data["html"] or data["attachments"] then
+    table.insert(body, "This is a multi-part message in MIME format.")
+    table.insert(body, CRLF)
     body_insert_boundary(body, mixed_boundary)
 
     local alternative_boundary = generate_boundary()
-    body_insert_header(body, "Content-Type", 'multipart/alternative; charset=utf-8; boundary="' .. alternative_boundary .. '"')
+    body_insert_header(body, "Content-Type", 'multipart/alternative; boundary="' .. alternative_boundary .. '"')
     table.insert(body, CRLF)
 
     if data["text"] then
@@ -186,7 +208,7 @@ function _M.get_body_list(self)
       body_insert_header(body, "Content-Type", "text/plain; charset=utf-8")
       body_insert_header(body, "Content-Transfer-Encoding", "base64")
       table.insert(body, CRLF)
-      table.insert(body, encode_base64(data["text"]))
+      table.insert(body, wrapped_base64(data["text"]))
       table.insert(body, CRLF)
     end
 
@@ -195,7 +217,7 @@ function _M.get_body_list(self)
       body_insert_header(body, "Content-Type", "text/html; charset=utf-8")
       body_insert_header(body, "Content-Transfer-Encoding", "base64")
       table.insert(body, CRLF)
-      table.insert(body, encode_base64(data["html"]))
+      table.insert(body, wrapped_base64(data["html"]))
       table.insert(body, CRLF)
     end
 

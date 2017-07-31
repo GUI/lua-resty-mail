@@ -1,7 +1,7 @@
 local message = require "resty.mail.message"
 
 describe("message get_recipient_addresses", function()
-  it("to, cc, bcc", function()
+  it("returns to, cc, bcc addresses", function()
     local msg = message.new({
       to = { "a@example.com", "b@example.com" },
       cc = { "c@example.com", "d@example.com" },
@@ -17,7 +17,7 @@ describe("message get_recipient_addresses", function()
     }, msg:get_recipient_addresses())
   end)
 
-  it("unique", function()
+  it("returns only unique addresses", function()
     local msg = message.new({
       to = { "a@example.com", "a@example.com" },
       cc = { "a@example.com", "a@example.com" },
@@ -26,7 +26,7 @@ describe("message get_recipient_addresses", function()
     assert.same({ "a@example.com" }, msg:get_recipient_addresses())
   end)
 
-  it("with name and spaces", function()
+  it("extracts addresses from name and spaces", function()
     local msg = message.new({
       to = { "Foo <a@example.com>" },
       cc = { "Bar  < b@example.com >" },
@@ -39,7 +39,7 @@ describe("message get_recipient_addresses", function()
     }, msg:get_recipient_addresses())
   end)
 
-  it("empty", function()
+  it("returns empty list when not present", function()
     local msg = message.new()
     assert.same({}, msg:get_recipient_addresses())
   end)
