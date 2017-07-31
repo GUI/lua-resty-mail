@@ -1,0 +1,8 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: nickblah/lua-resty-mail-test:latest
+    steps:
+      - checkout
+      - run: make test
