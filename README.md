@@ -34,6 +34,13 @@ local ok, err = mailer:send({
   subject = "Pizza is here!",
   text = "There's pizza in the sewer.",
   html = "<h1>There's pizza in the sewer.</h1>",
+  attachments = {
+    {
+      filename = "toppings.txt",
+      content_type = "text/plain",
+      content = "1. Cheese\n2. Pepperoni",
+    },
+  },
 })
 ```
 
@@ -76,4 +83,9 @@ The `data` table accepts the following fields:
 - `text`: Body of the message (plain text version).
 - `html`: Body of the message (HTML verion).
 - `headers`: A table of additional headers to set on the message.
-- `attachments`: A table of file attachments for the message.
+- `attachments`: A table list of file attachments for the message. Each attachment must be an object table with the following fields:
+  - `filename`: The filename of the attachment.
+  - `content_type`: The `Content-Type` of the file attachment.
+  - `content`: The contents of the file attachment as a string.
+  - `disposition`: The `Content-Disposition` of the file attachment. Can either be `attachment` or `inline`. (default: `attachment`)
+  - `content_id`: The `Content-ID` of the file attachment. (default: randomly generated ID)

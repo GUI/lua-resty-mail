@@ -11,42 +11,6 @@ local CRLF = "\r\n"
 
 local _M = {}
 
-local function body_insert_header(body, name, value)
-  if value then
-    table.insert(body, name)
-    table.insert(body, ": ")
-    table.insert(body, value)
-    table.insert(body, CRLF)
-  end
-end
-
-local function body_insert_boundary(body, boundary)
-  table.insert(body, "--")
-  table.insert(body, boundary)
-  table.insert(body, CRLF)
-end
-
-local function body_insert_boundary_final(body, boundary)
-  table.insert(body, "--")
-  table.insert(body, boundary)
-  table.insert(body, "--")
-  table.insert(body, CRLF)
-  table.insert(body, CRLF)
-end
-
-local function extract_address(string)
-  local captures, err = match(string, [[<\s*(.+?@.+?)\s*>]], "jo")
-  if captures then
-    return captures[1]
-  else
-    if err then
-      ngx.log(ngx.ERR, "lua-resty-mail: regex error: ", err)
-    end
-
-    return string
-  end
-end
-
 local function random_tag()
   local num_bytes = 20
   local random = random_bytes(num_bytes, true)
@@ -55,10 +19,6 @@ local function random_tag()
   end
 
   return math.floor(ngx.now()) .. "." .. to_hex(random)
-end
-
-local function generate_boundary()
-  return "--==_mimepart_" .. random_tag()
 end
 
 local function generate_message_id(data)
@@ -92,6 +52,65 @@ local function wrapped_base64(value)
   end
 
   return table.concat(lines, CRLF)
+end
+
+local function body_insert_header(body, name, value)
+  if value then
+    table.insert(body, name)
+    table.insert(body, ": ")
+    table.insert(body, value)
+    table.insert(body, CRLF)
+  end
+end
+
+local function body_insert_boundary(body, boundary)
+  table.insert(body, "--")
+  table.insert(body, boundary)
+  table.insert(body, CRLF)
+end
+
+local function body_insert_boundary_final(body, boundary)
+  table.insert(body, "--")
+  table.insert(body, boundary)
+  table.insert(body, "--")
+  table.insert(body, CRLF)
+  table.insert(body, CRLF)
+end
+
+local function body_insert_attachment(body, attachment)
+  assert(attachment["filename"])
+  assert(attachment["content_type"])
+  assert(attachment["content"])
+
+  local encoded_filename = "=?utf-8?B?" .. encode_base64(attachment["filename"]) .. "?="
+  local content_type = attachment["content_type"]
+  local disposition = attachment["disposition"] or "attachment"
+  local content_id = attachment["content_id"] or generate_message_id()
+
+  body_insert_header(body, "Content-Type", content_type)
+  body_insert_header(body, "Content-Transfer-Encoding", "base64")
+  body_insert_header(body, "Content-Disposition", disposition .. '; filename="' .. encoded_filename .. '"')
+  body_insert_header(body, "Content-ID", content_id)
+  table.insert(body, CRLF)
+  table.insert(body, wrapped_base64(attachment["content"]))
+  table.insert(body, CRLF)
+end
+
+local function extract_address(string)
+  local captures, err = match(string, [[<\s*(.+?@.+?)\s*>]], "jo")
+  if captures then
+    return captures[1]
+  else
+    if err then
+      ngx.log(ngx.ERR, "lua-resty-mail: regex error: ", err)
+    end
+
+    return string
+  end
+end
+
+local function generate_boundary()
+  return "--==_mimepart_" .. random_tag()
 end
 
 function _M.new(data)
@@ -224,7 +243,10 @@ function _M.get_body_list(self)
     body_insert_boundary_final(body, alternative_boundary)
 
     if data["attachments"] then
-      body_insert_boundary(body, mixed_boundary)
+      for _, attachment in ipairs(data["attachments"]) do
+        body_insert_boundary(body, mixed_boundary)
+        body_insert_attachment(body, attachment)
+      end
     end
 
     body_insert_boundary_final(body, mixed_boundary)

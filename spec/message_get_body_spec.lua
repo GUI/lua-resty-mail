@@ -59,4 +59,20 @@ describe("message get_body", function()
     })
     assert.matches("X-Foo: bar\r\n", msg:get_body_string(), 1, true)
   end)
+
+  it("supports attachments", function()
+    local msg = message.new({
+      attachments = {
+        {
+          filename = "foobar.txt",
+          content_type = "text/plain",
+          content = "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
+        },
+      },
+    })
+    local body = msg:get_body_string()
+    local boundary = ngx.re.match(body, 'Content-Type: multipart/mixed; boundary="([^"]+)"')[1]
+    local content_id = ngx.re.match(body, "Content-ID: (<[^>]+>)")[1]
+    assert.matches("--" .. boundary .. "\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"=?utf-8?B?Zm9vYmFyLnR4dA==?=\"\r\nContent-ID: " .. content_id .. "\r\n\r\nYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1\r\ndnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVm\r\nZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5\r\n--" .. boundary .. "--", body, 1, true)
+  end)
 end)
