@@ -6,3 +6,8 @@ jobs:
     steps:
       - checkout
       - run: make test
+      # Run the external integration tests, but only on non-forked PRs.
+      - run: |
+          if [ -n "$CIRCLE_PR_USERNAME" ]; then
+            make test_integration_external
+          fi
