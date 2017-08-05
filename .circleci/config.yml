@@ -5,6 +5,7 @@ jobs:
       - image: nickblah/lua-resty-mail-test:latest
     steps:
       - checkout
+      - run: env
       - run: make test
       # Run the external integration tests, but only on non-forked PRs.
       - run: |
