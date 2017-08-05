@@ -6,6 +6,9 @@ RUN apt-get install -y locales locales-all
 # For CI envrionment.
 RUN apt-get install -y git ssh
 
+# For luarocks upload.
+RUN apt-get install -y zip
+
 # Install luacheck
 RUN luarocks install luacheck 0.20.0-1 && \
   ln -s /usr/local/openresty/luajit/bin/luacheck /usr/local/bin/luacheck
