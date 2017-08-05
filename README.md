@@ -6,8 +6,6 @@ A high-level, easy to use, and non-blocking email and SMTP library for OpenResty
 
 # Features
 
-Currently in progress, but expected features in first release:
-
 - SMTP authentication, STARTTLS, and SSL support.
 - Multipart plain text and HTML message bodies.
 - From, To, Cc, Bcc, Reply-To, and Subject fields (custom headers also supported).
@@ -61,7 +59,7 @@ The `options` table accepts the following fields:
 - `username`: Username to use for SMTP authentication. (default: `nil`)
 - `password`: Password to use for SMTP authentication. (default: `nil`)
 - `auth_type`: The type of SMTP authentication to perform. Can either be `plain` or `login`. (default: `plain` if username and password are present)
-- `domain`: The domain name used as part of the Message-ID header and presented to the SMTP server during the `EHLO` connection. (default: `localhost.localdomain`)
+- `domain`: The domain name presented to the SMTP server during the `EHLO` connection and used as part of the Message-ID header. (default: `localhost.localdomain`)
 - `timeout_connect`: The timeout (in milliseconds) for connecting to the SMTP server. (default: OpenResty's global `lua_socket_connect_timeout` timeout, which defaults to 60s)
 - `timeout_send`: The timeout (in milliseconds) for sending data to the SMTP server. (default: OpenResty's global `lua_socket_send_timeout` timeout, which defaults to 60s)
 - `timeout_read`: The timeout (in milliseconds) for reading data from the SMTP server. (default: OpenResty's global `lua_socket_read_timeout` timeout, which defaults to 60s)
@@ -76,16 +74,24 @@ The `data` table accepts the following fields:
 
 - `from`: Email address for the `From` header.
 - `reply_to`: Email address for the `Reply-To` header.
-- `to`: A table list of email addresses for the `To` recipients.
-- `cc`: A table list of email addresses for the `Cc` recipients.
-- `bcc`: A table list of email addresses for the `Bcc` recipients.
+- `to`: A table (list-like) of email addresses for the `To` recipients.
+- `cc`: A table (list-like) of email addresses for the `Cc` recipients.
+- `bcc`: A table (list-like) of email addresses for the `Bcc` recipients.
 - `subject`: Message subject.
 - `text`: Body of the message (plain text version).
 - `html`: Body of the message (HTML verion).
 - `headers`: A table of additional headers to set on the message.
-- `attachments`: A table list of file attachments for the message. Each attachment must be an object table with the following fields:
+- `attachments`: A table (list-like) of file attachments for the message. Each attachment must be an table (map-like) with the following fields:
   - `filename`: The filename of the attachment.
   - `content_type`: The `Content-Type` of the file attachment.
   - `content`: The contents of the file attachment as a string.
   - `disposition`: The `Content-Disposition` of the file attachment. Can either be `attachment` or `inline`. (default: `attachment`)
   - `content_id`: The `Content-ID` of the file attachment. (default: randomly generated ID)
+
+# Development
+
+After checking out the repo, Docker can be used to run the test suite:
+
+```sh
+$ docker-compose run --rm app make test
+```
