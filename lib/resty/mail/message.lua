@@ -21,21 +21,8 @@ local function random_tag()
   return math.floor(ngx.now()) .. "." .. to_hex(random)
 end
 
-local function generate_message_id(data)
-  local host
-  if data and data["from"] then
-    local captures, err = match(data["from"], "@([^>]+)", "jo")
-    if captures then
-      host = captures[1] .. ".mail"
-    elseif err then
-      ngx.log(ngx.ERR, "lua-resty-mail: regex error: ", err)
-    end
-  end
-
-  if not host then
-    host = "localhost.localdomain"
-  end
-
+local function generate_message_id(mailer)
+  local host = mailer.options["domain"]
   return random_tag() .. "@" .. host
 end
 
@@ -77,7 +64,7 @@ local function body_insert_boundary_final(body, boundary)
   table.insert(body, CRLF)
 end
 
-local function body_insert_attachment(body, attachment)
+local function body_insert_attachment(body, attachment, mailer)
   assert(attachment["filename"])
   assert(attachment["content_type"])
   assert(attachment["content"])
@@ -85,7 +72,7 @@ local function body_insert_attachment(body, attachment)
   local encoded_filename = "=?utf-8?B?" .. encode_base64(attachment["filename"]) .. "?="
   local content_type = attachment["content_type"]
   local disposition = attachment["disposition"] or "attachment"
-  local content_id = attachment["content_id"] or generate_message_id()
+  local content_id = attachment["content_id"] or generate_message_id(mailer)
 
   body_insert_header(body, "Content-Type", content_type)
   body_insert_header(body, "Content-Transfer-Encoding", "base64")
@@ -113,7 +100,7 @@ local function generate_boundary()
   return "--==_mimepart_" .. random_tag()
 end
 
-function _M.new(data)
+function _M.new(mailer, data)
   if not data then
     data = {}
   end
@@ -150,7 +137,7 @@ function _M.new(data)
   end
 
   if not headers["Message-ID"] then
-    headers["Message-ID"] = "<" .. generate_message_id(data) .. ">"
+    headers["Message-ID"] = "<" .. generate_message_id(mailer) .. ">"
   end
 
   if not headers["Date"] then
@@ -163,7 +150,7 @@ function _M.new(data)
 
   data["headers"] = headers
 
-  return setmetatable({ data = data }, { __index = _M })
+  return setmetatable({ mailer = mailer, data = data }, { __index = _M })
 end
 
 function _M.get_from_address(self)
@@ -245,7 +232,7 @@ function _M.get_body_list(self)
     if data["attachments"] then
       for _, attachment in ipairs(data["attachments"]) do
         body_insert_boundary(body, mixed_boundary)
-        body_insert_attachment(body, attachment)
+        body_insert_attachment(body, attachment, self.mailer)
       end
     end
 

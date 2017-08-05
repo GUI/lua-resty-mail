@@ -46,7 +46,7 @@ function _M.send(self, data)
     return false, smtp_err
   end
 
-  local msg, msg_err = message.new(data)
+  local msg, msg_err = message.new(self, data)
   if not msg then
     return false, msg_err
   end

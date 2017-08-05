@@ -1,29 +1,14 @@
+local mail = require "resty.mail"
 local message = require "resty.mail.message"
 
 describe("message get_body", function()
   it("contains message-id, which uses 'from' host", function()
-    local msg = message.new({
-      from = "foo@example.com",
-    })
-    assert.matches("Message%-ID: <.+@example.com.mail>", msg:get_body_string())
-  end)
-
-  it("contains message-id, which uses 'from' host with name", function()
-    local msg = message.new({
-      from = "Foo <foo@example.com>",
-    })
-    assert.matches("Message%-ID: <.+@example.com.mail>", msg:get_body_string())
-  end)
-
-  it("contains message-id, which defaults to localhost for unparsable 'from'", function()
-    local msg = message.new({
-      from = "foo",
-    })
-    assert.matches("Message%-ID: <.+@localhost.localdomain>", msg:get_body_string())
+    local msg = message.new(mail.new({ domain = "example.com" }))
+    assert.matches("Message%-ID: <.+@example.com>", msg:get_body_string())
   end)
 
   it("contains message-id, which defaults to localhost", function()
-    local msg = message.new()
+    local msg = message.new(mail.new())
     assert.matches("Message%-ID: <.+@localhost.localdomain>", msg:get_body_string())
   end)
 
@@ -32,7 +17,7 @@ describe("message get_body", function()
     assert(os.setlocale("fr_FR"))
     assert.equal("ven., 28 juil. 2017", os.date("!%a, %d %b %Y", 1501211178))
 
-    local msg = message.new()
+    local msg = message.new(mail.new())
     -- Since the date output will be the current date, check to make sure the
     -- format matches the expected English output (which we can test for, since
     -- the french locale will have extra characters).
@@ -42,7 +27,7 @@ describe("message get_body", function()
   end)
 
   it("wraps the lines in base64 encoded bodies", function()
-    local msg = message.new({
+    local msg = message.new(mail.new(), {
       text = "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
       html = "<p>abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789</p>",
     })
@@ -52,7 +37,7 @@ describe("message get_body", function()
   end)
 
   it("supports custom headers", function()
-    local msg = message.new({
+    local msg = message.new(mail.new(), {
       headers = {
         ["X-Foo"] = "bar",
       },
@@ -61,7 +46,7 @@ describe("message get_body", function()
   end)
 
   it("supports attachments", function()
-    local msg = message.new({
+    local msg = message.new(mail.new(), {
       attachments = {
         {
           filename = "foobar.txt",
@@ -77,7 +62,7 @@ describe("message get_body", function()
   end)
 
   it("supports attachments with custom content ids", function()
-    local msg = message.new({
+    local msg = message.new(mail.new(), {
       attachments = {
         {
           filename = "foobar.txt",
