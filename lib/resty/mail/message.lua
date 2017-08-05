@@ -36,7 +36,7 @@ local function generate_message_id(data)
     host = "localhost.localdomain"
   end
 
-  return "<" .. random_tag() .. "@" .. host .. ">"
+  return random_tag() .. "@" .. host
 end
 
 local function wrapped_base64(value)
@@ -90,7 +90,7 @@ local function body_insert_attachment(body, attachment)
   body_insert_header(body, "Content-Type", content_type)
   body_insert_header(body, "Content-Transfer-Encoding", "base64")
   body_insert_header(body, "Content-Disposition", disposition .. '; filename="' .. encoded_filename .. '"')
-  body_insert_header(body, "Content-ID", content_id)
+  body_insert_header(body, "Content-ID", "<" .. content_id .. ">")
   table.insert(body, CRLF)
   table.insert(body, wrapped_base64(attachment["content"]))
   table.insert(body, CRLF)
@@ -150,7 +150,7 @@ function _M.new(data)
   end
 
   if not headers["Message-ID"] then
-    headers["Message-ID"] = generate_message_id(data)
+    headers["Message-ID"] = "<" .. generate_message_id(data) .. ">"
   end
 
   if not headers["Date"] then

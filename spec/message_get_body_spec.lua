@@ -75,4 +75,22 @@ describe("message get_body", function()
     local content_id = ngx.re.match(body, "Content-ID: (<[^>]+>)")[1]
     assert.matches("--" .. boundary .. "\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"=?utf-8?B?Zm9vYmFyLnR4dA==?=\"\r\nContent-ID: " .. content_id .. "\r\n\r\nYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1\r\ndnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVm\r\nZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5\r\n--" .. boundary .. "--", body, 1, true)
   end)
+
+  it("supports attachments with custom content ids", function()
+    local msg = message.new({
+      attachments = {
+        {
+          filename = "foobar.txt",
+          content_type = "text/plain",
+          content = "abc",
+          disposition = "inline",
+          content_id = "foobar",
+        },
+      },
+    })
+    local body = msg:get_body_string()
+    local boundary = ngx.re.match(body, 'Content-Type: multipart/mixed; boundary="([^"]+)"')[1]
+    local content_id = "<foobar>"
+    assert.matches("--" .. boundary .. "\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: inline; filename=\"=?utf-8?B?Zm9vYmFyLnR4dA==?=\"\r\nContent-ID: " .. content_id .. "\r\n\r\nYWJj\r\n--" .. boundary .. "--", body, 1, true)
+  end)
 end)
