@@ -12,6 +12,20 @@ A high-level, easy to use, and non-blocking email and SMTP library for OpenResty
 - Email addresses in "test@example.com" and "Name &lt;test@example.com&gt;" formats.
 - File attachments.
 
+# Installation
+
+Via [OPM](https://opm.openresty.org):
+
+```sh
+opm get GUI/lua-resty-mail
+```
+
+Or via [LuaRocks](https://luarocks.org):
+
+```sh
+luarocks install lua-resty-mail
+```
+
 # Usage
 
 ```lua
@@ -24,6 +38,10 @@ local mailer, err = mail.new({
   username = "example@gmail.com",
   password = "password",
 })
+if err then
+  ngx.log(ngx.ERR, "mail.new error: ", err)
+  return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+end
 
 local ok, err = mailer:send({
   from = "Master Splinter <splinter@example.com>",
@@ -40,6 +58,10 @@ local ok, err = mailer:send({
     },
   },
 })
+if err then
+  ngx.log(ngx.ERR, "mailer:send error: ", err)
+  return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+end
 ```
 
 # API
@@ -95,3 +117,14 @@ After checking out the repo, Docker can be used to run the test suite:
 ```sh
 $ docker-compose run --rm app make test
 ```
+
+## Release Process
+
+To release a new version to LuaRocks and OPM:
+
+- Ensure `CHANGELOG.md` is up to date.
+- Update the `_VERSION` in `lib/resty/mail.lua`.
+- Update the `version` in `dist.ini`.
+- Move the rockspec file to the new version number (`git mv lua-resty-mail-X.X.X-1.rockspec lua-resty-mail-X.X.X-1.rockspec`), and update the `version` and `tag` variables in the rockspec file.
+- Commit and tag the release (`git tag -a vX.X.X -m "Tagging vX.X.X" && git push origin vX.X.X`).
+- Run `make release VERSION=X.X.X`.
