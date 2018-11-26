@@ -115,7 +115,7 @@ The `data` table accepts the following fields:
 After checking out the repo, Docker can be used to run the test suite:
 
 ```sh
-$ docker-compose run --rm app make test
+docker-compose run --rm app make test
 ```
 
 ## Release Process

@@ -1,1 +1,5 @@
+# Ignore LuaRocks build artifacts
+/lua-resty-mail-*
+!/lua-resty-mail-*.rockspec
+
 /spec/tmp

@@ -1,35 +1,16 @@
-FROM openresty/openresty:jessie
+FROM openresty/openresty:1.13.6.2-2-centos
 
-# Locale data.
-RUN apt-get install -y locales locales-all
+# Build dependencies.
+RUN yum -y install make
 
-# For CI envrionment.
-RUN apt-get install -y git ssh
-
-# For luarocks upload.
-RUN apt-get install -y zip
-
-# Install luacheck
-RUN luarocks install luacheck 0.20.0-1 && \
-  ln -s /usr/local/openresty/luajit/bin/luacheck /usr/local/bin/luacheck
-
-# Install busted
-RUN luarocks install busted 2.0.rc12-1 && \
-  ln -s /usr/local/openresty/luajit/bin/busted /usr/local/bin/busted
-
-# Install lua-resty-http
-RUN luarocks install lua-resty-http 0.11-0
-
-# Install MailHog
-RUN curl -L -o /usr/local/bin/mailhog https://github.com/mailhog/MailHog/releases/download/v1.0.0/MailHog_linux_amd64 && \
-  chmod +x /usr/local/bin/mailhog
-
-# Install wait-for-it
-RUN curl -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
-  chmod +x /usr/local/bin/wait-for-it
+# Dependencies for the release process.
+RUN yum -y install git zip
 
 RUN mkdir /app
 WORKDIR /app
-COPY . /app
 
-ENTRYPOINT []
+COPY Makefile /app/Makefile
+RUN make install-test-deps-yum
+RUN make install-test-deps
+
+COPY . /app

@@ -141,7 +141,13 @@ local function send_message(self, message)
   local sock = self.sock
 
   -- Open connection
-  sock:settimeouts(options["timeout_connect"], options["timeout_send"], options["timeout_read"])
+  if sock.settimeouts then
+    sock:settimeouts(options["timeout_connect"], options["timeout_send"], options["timeout_read"])
+  else
+    -- Fallback to settimeout for older versions of ngx_lua (pre v0.10.7) where
+    -- settimeouts isn't available.
+    sock:settimeout(options["timeout_connect"])
+  end
   local ok, err = sock:connect(options["host"], options["port"])
   if not ok then
     return error("connect failure: " .. err)
