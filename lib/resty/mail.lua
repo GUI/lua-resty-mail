@@ -2,7 +2,7 @@ local message = require "resty.mail.message"
 local smtp = require "resty.mail.smtp"
 
 local _M = {
-  _VERSION = "1.0.1",
+  _VERSION = "1.0.2",
 }
 
 function _M.new(options)
