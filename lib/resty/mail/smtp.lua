@@ -129,8 +129,8 @@ local function authenticate(self)
     assert_response_ok(send_line(sock, "AUTH PLAIN " .. encode_base64("\0" .. username .. "\0" .. password)))
   elseif auth_type == "login" then
     assert_response_continue(send_line(sock, "AUTH LOGIN"))
-    assert_response_continue(send_line(sock, username))
-    assert_response_ok(send_line(sock, password))
+    assert_response_continue(send_line(sock, encode_base64(username)))
+    assert_response_ok(send_line(sock, encode_base64(password)))
   else
     return error("unknown auth_type: " .. (auth_type or ""))
   end

@@ -19,6 +19,9 @@ test-integration-external:
 
 install-test-deps-yum:
 	yum -y install gcc
+	# Install locale data for date formatting locale tests. This requires
+	# changing this yum setting and reinstalling:
+	# https://serverfault.com/a/884562
 	sed -i '/override_install_langs/d' /etc/yum.conf
 	yum -y reinstall glibc-common || yum -y install glibc-common
 

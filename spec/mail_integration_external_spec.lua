@@ -51,4 +51,26 @@ describe("mail integration external #integration_external", function()
     assert.equal(nil, err)
     assert.equal(true, ok)
   end)
+
+  it("sends login authenticated mail", function()
+    local mailer, mailer_err = mail.new({
+      host = "smtp.mailgun.org",
+      port = 587,
+      username = username,
+      password = password,
+      auth_type = "login",
+    })
+    assert.equal(nil, mailer_err)
+    local ok, err = mailer:send({
+      from = "foo@example.com",
+      to = { recipient },
+      subject = "Subject",
+      text = "Message",
+      headers = {
+        ["X-Mailgun-Drop-Message"] = "yes",
+      },
+    })
+    assert.equal(nil, err)
+    assert.equal(true, ok)
+  end)
 end)
