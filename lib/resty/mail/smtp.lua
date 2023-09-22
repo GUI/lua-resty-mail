@@ -165,7 +165,7 @@ local function send_message(self, message)
 
   -- If STARTTLS is explicitly enabled, or it's detected as supported, then try
   -- to establish a secure connection.
-  if options["starttls"] or self.extensions["starttls"] then
+  if (options["starttls"] or self.extensions["starttls"]) and not options["ssl"] then
     assert_response_ok(send_line(sock, "STARTTLS"))
     sslhandshake(self)
 
