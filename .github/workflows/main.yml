@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - test-1.11
+          - test-1.13
+          - test-1.21
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Container
+        run: docker compose build "${{ matrix.variant }}"
+
+      - name: Lint
+        run: docker compose run --rm "${{ matrix.variant }}" make lint
+
+      - name: Test
+        run: docker compose run --rm "${{ matrix.variant }}" make test
+
+      - name: External SMTP Integration Test
+        if: ${{ !github.event.repository.fork }}
+        run: docker compose run --rm "${{ matrix.variant }}" make test-integration-external
+        env:
+          MAILGUN_USERNAME: ${{ secrets.MAILGUN_USERNAME }}
+          MAILGUN_PASSWORD: ${{ secrets.MAILGUN_PASSWORD }}
+          MAILGUN_RECIPIENT: ${{ secrets.MAILGUN_RECIPIENT }}

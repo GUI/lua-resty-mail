@@ -1,37 +1,32 @@
-.PHONY: all lint test test-integration-external install-test-deps-yum install-test-deps release
+.PHONY: all lint test test-integration-external install-test-deps release
 
 all:
 
 lint:
 	luacheck .
 
-test: lint
-	luarocks make --local lua-resty-mail-git-1.rockspec
+test:
+	luarocks make --tree "${HOME}/.luarocks" lua-resty-mail-git-1.rockspec
 	mkdir -p spec/tmp
-	mailhog > spec/tmp/mailhog.log 2>&1 & echo $$! > spec/tmp/mailhog.pid
+	mailpit > spec/tmp/mailpit.log 2>&1 & echo $$! > spec/tmp/mailpit.pid
 	wait-for-it localhost:1025
 	env LUA_PATH="${HOME}/.luarocks/share/lua/5.1/?.lua;;" TZ="America/Denver" busted --shuffle --lua=resty --exclude-tags=integration_external spec
-	kill `cat spec/tmp/mailhog.pid` && rm spec/tmp/mailhog.pid
+	kill `cat spec/tmp/mailpit.pid` && rm spec/tmp/mailpit.pid
 
 test-integration-external:
-	luarocks make --local lua-resty-mail-git-1.rockspec
+	luarocks make --tree "${HOME}/.luarocks" lua-resty-mail-git-1.rockspec
 	env LUA_PATH="${HOME}/.luarocks/share/lua/5.1/?.lua;;" busted --shuffle --lua=resty --tags=integration_external spec
 
-install-test-deps-yum:
-	yum -y install gcc
-	# Install locale data for date formatting locale tests. This requires
-	# changing this yum setting and reinstalling:
-	# https://serverfault.com/a/884562
-	sed -i '/override_install_langs/d' /etc/yum.conf
-	yum -y reinstall glibc-common || yum -y install glibc-common
-
 install-test-deps:
-	luarocks install busted 2.0.rc13-0
-	luarocks install luacheck 0.22.1-1
-	luarocks install lua-resty-http 0.12-0
-	curl -fsSL -o /usr/local/bin/mailhog https://github.com/mailhog/MailHog/releases/download/v1.0.0/MailHog_linux_amd64
-	chmod +x /usr/local/bin/mailhog
-	curl -fsSL -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/54d1f0bfeb6557adf8a3204455389d0901652242/wait-for-it.sh
+	luarocks install busted 2.1.2-3
+	luarocks install luacheck 1.1.1-1
+	luarocks install lua-resty-http 0.17.1-0
+	arch="amd64"; \
+	if [ "$$(uname -m)" = "aarch64" ]; then \
+		arch="arm64"; \
+	fi; \
+	curl -fsSL "https://github.com/axllent/mailpit/releases/download/v1.9.0/mailpit-linux-$$arch.tar.gz" | tar -xvz -C /usr/local/bin/ --wildcards "mailpit"
+	curl -fsSL -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/81b1373f17855a4dc21156cfe1694c31d7d1792e/wait-for-it.sh
 	chmod +x /usr/local/bin/wait-for-it
 
 release:

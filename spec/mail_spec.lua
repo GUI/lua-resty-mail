@@ -28,7 +28,7 @@ describe("mail", function()
       subject = "Subject",
       text = "Message",
     })
-    assert.matches("SMTP response was not successful: 500 Unrecognised command", err, 1, true)
+    assert.matches("SMTP response was not successful: 502 5.5.1 Command not implemented", err, 1, true)
     assert.equal(false, ok)
   end)
 
