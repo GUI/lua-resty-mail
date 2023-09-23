@@ -6,6 +6,8 @@ RUN yum -y install \
   glibc-langpack-fr \
   make
 
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
+
 RUN mkdir /app
 WORKDIR /app
 

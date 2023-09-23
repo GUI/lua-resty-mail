@@ -113,7 +113,8 @@ end
 local function sslhandshake(self)
   local sock = self.sock
   local options = self.mailer["options"]
-  local session, err = sock:sslhandshake(nil, options["host"], false)
+  local session, err = sock:sslhandshake(nil, options["ssl_host"] or options["host"], options["ssl_verify"] or false)
+
   if not session then
     return error("sslhandshake error: " .. (err or ""))
   end

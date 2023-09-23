@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec resty --http-conf "lua_ssl_trusted_certificate $SSL_CERT_FILE;" "$@"

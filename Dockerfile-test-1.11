@@ -11,14 +11,16 @@ RUN yum -y install \
 RUN sed -i '/override_install_langs/d' /etc/yum.conf && \
   yum -y reinstall glibc-common || yum -y install glibc-common
 
-RUN mkdir /app
-WORKDIR /app
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
 
 # Set PATH to pickup "luarocks" in this version of OpenResty container.
 ENV PATH=/usr/local/openresty/luajit/bin:/usr/local/openresty/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Unset default entrypoint in this version of OpenResty container.
 ENTRYPOINT []
+
+RUN mkdir /app
+WORKDIR /app
 
 COPY Makefile /app/Makefile
 RUN make install-test-deps

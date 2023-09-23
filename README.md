@@ -82,6 +82,8 @@ The `options` table accepts the following fields:
 - `password`: Password to use for SMTP authentication. (default: `nil`)
 - `auth_type`: The type of SMTP authentication to perform. Can either be `plain` or `login`. (default: `plain` if username and password are present)
 - `domain`: The domain name presented to the SMTP server during the `EHLO` connection and used as part of the Message-ID header. (default: `localhost.localdomain`)
+- `ssl_verify`: Whether or not to perform verification of the server's certificate when either `ssl` or `starttls` is enabled. If this is enabled then configuring the [`lua_ssl_trusted_certificate`](https://github.com/openresty/lua-nginx-module#lua_ssl_trusted_certificate) setting will be required. (default: `false`)
+- `ssl_host`: If the hostname of the server's certificate is different than the `host` option, this setting can be used to specify a different host used for SNI and TLS verification when either `ssl` or `starttls` is enabled. (default: the `host` option's value)
 - `timeout_connect`: The timeout (in milliseconds) for connecting to the SMTP server. (default: OpenResty's global `lua_socket_connect_timeout` timeout, which defaults to 60s)
 - `timeout_send`: The timeout (in milliseconds) for sending data to the SMTP server. (default: OpenResty's global `lua_socket_send_timeout` timeout, which defaults to 60s)
 - `timeout_read`: The timeout (in milliseconds) for reading data from the SMTP server. (default: OpenResty's global `lua_socket_read_timeout` timeout, which defaults to 60s)

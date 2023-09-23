@@ -37,3 +37,13 @@ jobs:
           MAILGUN_USERNAME: ${{ secrets.MAILGUN_USERNAME }}
           MAILGUN_PASSWORD: ${{ secrets.MAILGUN_PASSWORD }}
           MAILGUN_RECIPIENT: ${{ secrets.MAILGUN_RECIPIENT }}
+
+      - name: External SMTP Integration Test with SSL Certs
+        # Don't run on OpenResty 1.11, since it's `resty` lacks support for the
+        # `--http-conf` flag.
+        if: ${{ !github.event.repository.fork && matrix.variant != 'test-1.11' }}
+        run: docker compose run --rm "${{ matrix.variant }}" make test-integration-ssl-certs
+        env:
+          MAILGUN_USERNAME: ${{ secrets.MAILGUN_USERNAME }}
+          MAILGUN_PASSWORD: ${{ secrets.MAILGUN_PASSWORD }}
+          MAILGUN_RECIPIENT: ${{ secrets.MAILGUN_RECIPIENT }}

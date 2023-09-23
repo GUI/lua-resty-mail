@@ -9,6 +9,8 @@ RUN yum -y install \
 # Dependencies for the release process.
 RUN yum -y install git zip
 
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
+
 RUN mkdir /app
 WORKDIR /app
 

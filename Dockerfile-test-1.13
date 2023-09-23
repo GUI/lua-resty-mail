@@ -11,6 +11,8 @@ RUN yum -y install \
 RUN sed -i '/override_install_langs/d' /etc/yum.conf && \
   yum -y reinstall glibc-common || yum -y install glibc-common
 
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
+
 RUN mkdir /app
 WORKDIR /app
 

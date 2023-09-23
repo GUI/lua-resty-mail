@@ -1,4 +1,4 @@
-.PHONY: all lint test test-integration-external install-test-deps release
+.PHONY: all lint test test-integration-external test-integration-ssl-certs install-test-deps release
 
 all:
 
@@ -10,12 +10,16 @@ test:
 	mkdir -p spec/tmp
 	mailpit > spec/tmp/mailpit.log 2>&1 & echo $$! > spec/tmp/mailpit.pid
 	wait-for-it localhost:1025
-	env LUA_PATH="${HOME}/.luarocks/share/lua/5.1/?.lua;;" TZ="America/Denver" busted --shuffle --lua=resty --exclude-tags=integration_external spec
+	env LUA_PATH="${HOME}/.luarocks/share/lua/5.1/?.lua;;" TZ="America/Denver" busted --shuffle --lua=resty --exclude-tags=integration_external,integration_ssl_certs spec
 	kill `cat spec/tmp/mailpit.pid` && rm spec/tmp/mailpit.pid
 
 test-integration-external:
 	luarocks make --tree "${HOME}/.luarocks" lua-resty-mail-git-1.rockspec
 	env LUA_PATH="${HOME}/.luarocks/share/lua/5.1/?.lua;;" busted --shuffle --lua=resty --tags=integration_external spec
+
+test-integration-ssl-certs:
+	luarocks make --tree "${HOME}/.luarocks" lua-resty-mail-git-1.rockspec
+	env LUA_PATH="${HOME}/.luarocks/share/lua/5.1/?.lua;;" busted --shuffle --lua=./spec/bin/resty-with-ssl-certs --tags=integration_ssl_certs spec
 
 install-test-deps:
 	luarocks install busted 2.1.2-3
