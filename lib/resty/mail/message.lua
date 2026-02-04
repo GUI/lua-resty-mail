@@ -128,10 +128,6 @@ function _M.new(mailer, data)
     headers["Cc"] = table.concat(data["cc"], ",")
   end
 
-  if data["bcc"] then
-    headers["Bcc"] = table.concat(data["bcc"], ",")
-  end
-
   if data["subject"] then
     headers["Subject"] = data["subject"]
   end
@@ -146,6 +142,16 @@ function _M.new(mailer, data)
 
   if not headers["MIME-Version"] then
     headers["MIME-Version"] = "1.0"
+  end
+
+  -- Include an empty `Bcc` header if there is no `To` or `Cc` header.
+  --
+  -- https://datatracker.ietf.org/doc/html/rfc5321#appendix-B
+  -- > the remaining header fields SHOULD be checked to verify that at least
+  -- > one TO, CC, or BCC header field remains. If none do, then a BCC header
+  -- > field with no additional information SHOULD be inserted"
+  if not headers["To"] and not headers["Cc"] then
+    headers["Bcc"] = ""
   end
 
   data["headers"] = headers

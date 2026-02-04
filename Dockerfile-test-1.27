@@ -1,4 +1,4 @@
-FROM openresty/openresty:1.21.4.2-rocky
+FROM openresty/openresty:1.27.1.2-rocky
 
 # Test dependencies.
 RUN yum -y install \

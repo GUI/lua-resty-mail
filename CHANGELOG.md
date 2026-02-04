@@ -1,5 +1,10 @@
 # lua-resty-mail Change Log
 
+## 1.2.0 - 2026-02-04
+
+### Fixed
+- Fixed `Bcc` headers being included in the SMTP message, potentially leaking the recipients. While some SMTP servers may have stripped this header, if the SMTP server did not strip this, the Bcc recipients would have been leaked. (Fixes [#9](https://github.com/GUI/lua-resty-mail/issues/9))
+
 ## 1.1.0 - 2023-09-23
 
 ### Added

@@ -1,7 +1,5 @@
 # lua-resty-mail
 
-[![CircleCI](https://circleci.com/gh/GUI/lua-resty-mail.svg?style=svg)](https://circleci.com/gh/GUI/lua-resty-mail)
-
 A high-level, easy to use, and non-blocking email and SMTP library for OpenResty.
 
 # Features
