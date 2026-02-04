@@ -94,7 +94,7 @@ describe("mail integration external #integration_external", function()
       },
     })
     assert.equal(false, ok)
-    assert.matches("sslhandshake error: 20: unable to get local issuer certificate", err, 1, true)
+    assert.matches("sslhandshake error: 19: self-signed certificate in certificate chain", err, 1, true)
   end)
 
   it("rejects ssl when ssl_verify is enabled and no system certs are configured", function()
@@ -117,6 +117,6 @@ describe("mail integration external #integration_external", function()
       },
     })
     assert.equal(false, ok)
-    assert.matches("sslhandshake error: 20: unable to get local issuer certificate", err, 1, true)
+    assert.matches("sslhandshake error: 19: self-signed certificate in certificate chain", err, 1, true)
   end)
 end)
