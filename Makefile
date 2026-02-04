@@ -25,6 +25,7 @@ install-test-deps:
 	luarocks install busted 2.3.0-1
 	luarocks install luacheck 1.2.0-1
 	luarocks install lua-resty-http 0.17.2-0
+	luarocks install lua-resty-openssl 1.7.1-1
 	arch="amd64"; \
 	if [ "$$(uname -m)" = "aarch64" ]; then \
 		arch="arm64"; \
