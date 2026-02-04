@@ -1,4 +1,3 @@
-version: "3"
 services:
   app:
     build:
@@ -34,6 +33,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-test-1.21
+    volumes:
+      - .:/app
+    environment:
+      - MAILGUN_USERNAME
+      - MAILGUN_PASSWORD
+      - MAILGUN_RECIPIENT
+  test-1.27:
+    build:
+      context: .
+      dockerfile: Dockerfile-test-1.27
     volumes:
       - .:/app
     environment:

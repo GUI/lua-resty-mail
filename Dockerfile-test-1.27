@@ -6,9 +6,6 @@ RUN yum -y install \
   glibc-langpack-fr \
   make
 
-# Dependencies for the release process.
-RUN yum -y install git zip
-
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
 
 RUN mkdir /app

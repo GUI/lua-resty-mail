@@ -22,14 +22,14 @@ test-integration-ssl-certs:
 	env LUA_PATH="${HOME}/.luarocks/share/lua/5.1/?.lua;;" busted --shuffle --lua=./spec/bin/resty-with-ssl-certs --tags=integration_ssl_certs spec
 
 install-test-deps:
-	luarocks install busted 2.1.2-3
-	luarocks install luacheck 1.1.1-1
-	luarocks install lua-resty-http 0.17.1-0
+	luarocks install busted 2.3.0-1
+	luarocks install luacheck 1.2.0-1
+	luarocks install lua-resty-http 0.17.2-0
 	arch="amd64"; \
 	if [ "$$(uname -m)" = "aarch64" ]; then \
 		arch="arm64"; \
 	fi; \
-	curl -fsSL "https://github.com/axllent/mailpit/releases/download/v1.9.0/mailpit-linux-$$arch.tar.gz" | tar -xvz -C /usr/local/bin/ --wildcards "mailpit"
+	curl -fsSL "https://github.com/axllent/mailpit/releases/download/v1.29.0/mailpit-linux-$$arch.tar.gz" | tar -xvz -C /usr/local/bin/ --wildcards "mailpit"
 	curl -fsSL -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/81b1373f17855a4dc21156cfe1694c31d7d1792e/wait-for-it.sh
 	chmod +x /usr/local/bin/wait-for-it
 
