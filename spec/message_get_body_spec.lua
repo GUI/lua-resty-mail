@@ -78,4 +78,48 @@ describe("message get_body", function()
     local content_id = "<foobar>"
     assert.matches("--" .. boundary .. "\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: inline; filename=\"=?utf-8?B?Zm9vYmFyLnR4dA==?=\"\r\nContent-ID: " .. content_id .. "\r\n\r\nYWJj\r\n--" .. boundary .. "--", body, 1, true)
   end)
+
+  it("does not include bcc header if other recipients are present", function()
+    local msg = message.new(mail.new(), {
+      to = { "to@example.com" },
+      cc = { "cc@example.com" },
+      bcc = { "bcc@example.com" },
+    })
+    local body = msg:get_body_string()
+    assert.matches("To: to@example.com\r\n", body)
+    assert.matches("Cc: cc@example.com\r\n", body)
+    assert.is_not.matches("Bcc:", body)
+    assert.is_not.matches("bcc@example.com", body)
+
+    msg = message.new(mail.new(), {
+      to = { "to@example.com" },
+      bcc = { "bcc@example.com" },
+    })
+    body = msg:get_body_string()
+    assert.matches("To: to@example.com\r\n", body)
+    assert.is_not.matches("Cc:", body)
+    assert.is_not.matches("Bcc:", body)
+    assert.is_not.matches("bcc@example.com", body)
+
+    msg = message.new(mail.new(), {
+      cc = { "cc@example.com" },
+      bcc = { "bcc@example.com" },
+    })
+    body = msg:get_body_string()
+    assert.is_not.matches("To:", body)
+    assert.matches("Cc: cc@example.com\r\n", body)
+    assert.is_not.matches("Bcc:", body)
+    assert.is_not.matches("bcc@example.com", body)
+  end)
+
+  it("include empty bcc if only recipients are present", function()
+    local msg = message.new(mail.new(), {
+      bcc = { "bcc@example.com" },
+    })
+    local body = msg:get_body_string()
+    assert.is_not.matches("To:", body)
+    assert.is_not.matches("Cc:", body)
+    assert.matches("Bcc: \r\n", body)
+    assert.is_not.matches("bcc@example.com", body)
+  end)
 end)
